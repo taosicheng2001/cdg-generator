@@ -8,7 +8,12 @@ class Graph{
   public:
     int numOfNodes;
     int numOfEdges;
+    int numOfnsEdges;
+    int numOfweEdges;
+
     std::vector<std::pair<int, int>> edges;
+    std::vector<std::pair<int, int>> weEdges;
+    std::vector<std::pair<int, int>> nsEdges;
 
     Graph(int n){
       numOfNodes = n;
@@ -26,6 +31,16 @@ class Graph{
     void addEdge(int src, int dest){
       edges.push_back({src, dest});
       numOfEdges += 1;
+      return;
+    }
+
+    void addNSEdge(int src, int dest){
+      nsEdges.push_back({src, dest});
+      return;
+    }
+
+    void addWEEdge(int src, int dest){
+      weEdges.push_back({src, dest});
       return;
     }
 
@@ -58,7 +73,15 @@ class CDG: public Graph{
       edges.clear();
     }
 
-    void generateCDG(const Graph &G){
+    int edgeMatch(std::pair<int, int> edge, std::vector<std::pair<int, int>> edges){
+      for(auto it=edges.begin(); it<edges.end(); it++)
+        if(it->first == edge.first && it->second == edge.second)
+          return 1;
+
+      return 0;
+    }
+
+    void generateCDG(const Graph &G, std::string routeAlg){
 
       // Generate CDGNodes
       for(auto it=G.edges.begin(); it<G.edges.end(); it++){
@@ -81,11 +104,23 @@ class CDG: public Graph{
           if(srcNext != dest) continue;
           if(destNext == src) continue;
 
+          // XY Algorithm Check
+          if(routeAlg == "XY"){
+
+            int cnt1 = edgeMatch(*it, G.nsEdges);
+            int cnt2 = edgeMatch(*jt, G.weEdges);
+
+            if(cnt1 + cnt2 == 2)
+              continue;
+          }
+
           std::string CDGDest = "(" + std::to_string(srcNext) + "," + std::to_string(destNext) + ")";
+
           edges.push_back({CDGSrc, CDGDest});
           numOfEdges++;
         }
       }
+
     }
 
     ~CDG(){}
